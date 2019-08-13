@@ -9,7 +9,7 @@ https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv (PML Traini
 The test data are available here:
 https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv (PML Testing Dataset)
 
-The data for this project come from this source: http://groupware.les.inf.puc-rio.br/har. If you use the document you create for this class for any purpose please cite them as they have been very generous in allowing their data to be used for this kind of assignment.
+The data for this project come from this source: http://groupware.les.inf.puc-rio.br/har. If you will use the data as well for any purpose please cite them as they have been very generous in allowing their data to be used for this kind of assignment.
 
 ## Instructions
 The goal of the project is to predict the manner in which they did the exercise. This is the "classe" variable in the training set. It is allowed to use any of the other variables to predict with. It is expected to create a report describing how the model is built, how cross validation is used, what the expected out of sample error is possibly. Also, the prediction model will be used to predict 20 different test cases.
