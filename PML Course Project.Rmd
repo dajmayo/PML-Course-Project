@@ -1,0 +1,114 @@
+---
+title: "Practical Machine Learning Course Project"
+author: "Danna Ashley J. Mayo"
+date: "August 13, 2019"
+output: html_document
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, warning = FALSE, message = FALSE)
+```
+
+### Project Overview 
+This project aims to predict the manner in which the 6 participants from the dataset did their exercise. Here you will see how the model is built, how cross validations is used for the mode, what the possible out of sample error would be, and why the following choices are made. Afterwhich, the prediction model built will be used to predict 20 different test cases. 
+
+#### Data Preparation
+```{r}
+library(caret)
+library(randomForest)
+library(dplyr)
+library(e1071)
+library(ggplot2)
+
+train <- read.csv("pml-training.csv", na.strings = c("NA", "#DIV/0!", ""))
+test <- read.csv("pml-testing.csv", na.strings = c("NA", "#DIV/0!", ""))
+str(head(train))
+```
+
+#### Data Cleaning
+Looking at the structure of the first few rows of the train dataset, we will notice that there is a lot of "NA" and "#DIV/0!" values already present, hence we filter out those records. Furthermore, we made sure that these values are all converted to "NA" seeing the na.strings argument when reading the csv file for easier removal.
+
+```{r}
+cleantrain <- train[,colSums(is.na(train)) == 0]
+cleantest <- test[,colSums(is.na(test)) == 0]
+```
+
+### Feature Selection
+Let us reduce the number of variables or columns and take only what we need for the training set. 
+Variables/Columns to remove: X (Index), Username, Timestamps, and Windows.
+```{r}
+cleantrain <- cleantrain[,-c(1:7)]
+cleantest <- cleantest[,-c(1:7)]
+dim(cleantrain)
+dim(cleantest)
+```
+
+Take a look at the variable names to get a glimpse of the predictors that we will use in building the model. 
+```{r}
+colnames(cleantrain)
+```
+
+### Data Modeling - Random Forest
+Why Random Forest?
+One of the advantages of RF is it's good accuracy results. Additionally, it is a great algorithm for classification problems which suits our case. Also, it's default parameters already return good results and is good at avoiding overfitting. 
+
+#### Partition the data into train and test/validation set
+```{r}
+#Here we will use the standard 60/40 data split 
+set.seed(28)
+split <- createDataPartition(train$classe, p = 0.6, list = FALSE)
+modeltrain <- cleantrain[split,]
+modeltest <- cleantrain[-split,]
+dim(modeltrain); dim(modeltest)
+```
+
+#### Build the model with cross validation 
+```{r}
+RFModel <- train(classe ~ .
+                , data = modeltrain
+                , method = "rf"
+                , metric = "Accuracy"  # Accuracy because we are expecting a categorical outcome variable
+                , preProcess=c("center", "scale") # Normalize to at least improve accuracy
+                , trControl=trainControl(method = "cv"
+                                        , number = 4 # Folds of the training data
+                                        , p= 0.60
+                                        ))
+
+print(RFModel, digits = 4)
+```
+
+#### Predicting 
+```{r}
+predicting <- predict(RFModel, modeltest)
+```
+
+#### Model Evaluation
+Let us now take a look at the statistical results of the model built. 
+```{r}
+confusionMatrix(predicting, modeltest$classe)
+```
+
+#### Expected Out of Sample Error 
+```{r}
+ooserror <- 1 - as.numeric(confusionMatrix(modeltest$classe, predicting)$overall[1])
+```
+
+**Accuracy: 99.16%**
+
+**Expected Out of Sample Error: 0.0084 or 0.84%**
+
+#### Final model and Top 20 significant variables in our model
+```{r}
+RFModel$finalModel
+```
+```{r}
+varImp(RFModel)
+```
+
+### Model Validation 
+```{r}
+print(predict(RFModel, newdata = cleantest))
+```
+
+*The model built is still up for the Course Project Prediction Quiz
